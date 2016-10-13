@@ -76,7 +76,9 @@ class Layer : public SurfaceFlingerConsumer::ContentsChangedListener {
     friend class LayerBlur;
 
 public:
+#ifdef QTI_BSP
     friend class ExLayer;
+#endif
     mutable bool contentDirty;
     // regions below are in window-manager space
     Region visibleRegion;
@@ -130,7 +132,7 @@ public:
 
         // If set, defers this state update until the Layer identified by handle
         // receives a frame with the given frameNumber
-        sp<IBinder> handle;
+        wp<IBinder> handle;
         uint64_t frameNumber;
 
         // the transparentRegion hint is a bit special, it's latched only
@@ -182,7 +184,7 @@ public:
     uint32_t getTransactionFlags(uint32_t flags);
     uint32_t setTransactionFlags(uint32_t flags);
 
-    void computeGeometry(const sp<const DisplayDevice>& hw, Mesh& mesh,
+    virtual void computeGeometry(const sp<const DisplayDevice>& hw, Mesh& mesh,
             bool useIdentityTransform) const;
     Rect computeBounds(const Region& activeTransparentRegion) const;
     Rect computeBounds() const;
@@ -357,6 +359,7 @@ public:
     /* ------------------------------------------------------------------------
      * Extensions
      */
+#ifndef USE_HWC2
     virtual bool isExtOnly() const { return false; }
     virtual bool isIntOnly() const { return false; }
     virtual bool isSecureDisplay() const { return false; }
@@ -366,8 +369,10 @@ public:
                              const State& /*state*/) { }
     virtual void setAcquiredFenceIfBlit(int& /*fenceFd */,
                        HWComposer::HWCLayerInterface& /*layer */) { }
+#endif
     virtual bool canAllowGPUForProtected() const { return false; }
-
+    virtual void handleOpenGLDraw(const sp<const DisplayDevice>& /*hw*/,
+            Mesh& mesh) const;
 
     /*
      * returns the rectangle that crops the content of the layer and scales it
@@ -477,7 +482,7 @@ private:
     // drawing
     void clearWithOpenGL(const sp<const DisplayDevice>& hw, const Region& clip,
             float r, float g, float b, float alpha) const;
-    void drawWithOpenGL(const sp<const DisplayDevice>& hw, const Region& clip,
+    virtual void drawWithOpenGL(const sp<const DisplayDevice>& hw, const Region& clip,
             bool useIdentityTransform) const;
 
     // Temporary - Used only for LEGACY camera mode.
