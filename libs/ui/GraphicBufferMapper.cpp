@@ -269,6 +269,43 @@ status_t GraphicBufferMapper::lockAsyncYCbCr(buffer_handle_t handle,
     ycbcr->cstride = static_cast<size_t>(cbPlane->v_increment);
     ycbcr->chroma_step = static_cast<size_t>(cbPlane->h_increment);
 
+    // Validate planes
+    if (!isValidYCbCrPlane(*yPlane)) {
+        ALOGV("Y plane is invalid");
+        unlock(handle);
+        return GRALLOC1_ERROR_UNSUPPORTED;
+    }
+    if (!isValidYCbCrPlane(*cbPlane)) {
+        ALOGV("Cb plane is invalid");
+        unlock(handle);
+        return GRALLOC1_ERROR_UNSUPPORTED;
+    }
+    if (!isValidYCbCrPlane(*crPlane)) {
+        ALOGV("Cr plane is invalid");
+        unlock(handle);
+        return GRALLOC1_ERROR_UNSUPPORTED;
+    }
+    if (cbPlane->v_increment != crPlane->v_increment) {
+        ALOGV("Cb and Cr planes have different step (%d vs. %d)",
+                cbPlane->v_increment, crPlane->v_increment);
+        unlock(handle);
+        return GRALLOC1_ERROR_UNSUPPORTED;
+    }
+    if (cbPlane->h_increment != crPlane->h_increment) {
+        ALOGV("Cb and Cr planes have different stride (%d vs. %d)",
+                cbPlane->h_increment, crPlane->h_increment);
+        unlock(handle);
+        return GRALLOC1_ERROR_UNSUPPORTED;
+    }
+
+    // Pack plane data into android_ycbcr struct
+    ycbcr->y = yPlane->top_left;
+    ycbcr->cb = cbPlane->top_left;
+    ycbcr->cr = crPlane->top_left;
+    ycbcr->ystride = static_cast<size_t>(yPlane->v_increment);
+    ycbcr->cstride = static_cast<size_t>(cbPlane->v_increment);
+    ycbcr->chroma_step = static_cast<size_t>(cbPlane->h_increment);
+
     return error;
 }
 

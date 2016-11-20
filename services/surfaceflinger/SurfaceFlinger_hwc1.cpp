@@ -494,6 +494,14 @@ void SurfaceFlinger::init() {
         }
     }
 
+    // set SFEventThread to SCHED_FIFO to minimize jitter
+    struct sched_param param = {0};
+    param.sched_priority = 1;
+    if (sched_setscheduler(mSFEventThread->getTid(), SCHED_FIFO, &param) != 0) {
+        ALOGE("Couldn't set SCHED_FIFO for SFEventThread");
+    }
+
+
     // Initialize the H/W composer object.  There may or may not be an
     // actual hardware composer underneath.
     mHwc = DisplayUtils::getInstance()->getHWCInstance(this,
@@ -3322,6 +3330,11 @@ status_t SurfaceFlinger::onTransact(
                 n = data.readInt32();
                 if (mSFEventThread != NULL)
                     mSFEventThread->setPhaseOffset(static_cast<nsecs_t>(n));
+                return NO_ERROR;
+            }
+            case 1021: { // Disable HWC virtual displays
+                n = data.readInt32();
+                mUseHwcVirtualDisplays = !n;
                 return NO_ERROR;
             }
             case 1021: { // Disable HWC virtual displays
