@@ -3337,11 +3337,6 @@ status_t SurfaceFlinger::onTransact(
                 mUseHwcVirtualDisplays = !n;
                 return NO_ERROR;
             }
-            case 1021: { // Disable HWC virtual displays
-                n = data.readInt32();
-                mUseHwcVirtualDisplays = !n;
-                return NO_ERROR;
-            }
         }
     }
     return err;
