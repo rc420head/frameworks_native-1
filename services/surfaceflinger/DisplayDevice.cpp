@@ -165,7 +165,7 @@ DisplayDevice::DisplayDevice(
 
     mPanelMountFlip = 0;
     // 1: H-Flip, 2: V-Flip, 3: 180 (HV Flip)
-    property_get("persist.panel.mountflip", property, "0");
+    property_get("ro.panel.mountflip", property, "0");
     mPanelMountFlip = atoi(property);
 
     // initialize the display orientation transform.
@@ -419,6 +419,17 @@ void DisplayDevice::setActiveConfig(int mode) {
 int DisplayDevice::getActiveConfig()  const {
     return mActiveConfig;
 }
+
+// ----------------------------------------------------------------------------
+#ifdef USE_HWC2
+void DisplayDevice::setActiveColorMode(android_color_mode_t mode) {
+    mActiveColorMode = mode;
+}
+
+android_color_mode_t DisplayDevice::getActiveColorMode() const {
+    return mActiveColorMode;
+}
+#endif
 
 // ----------------------------------------------------------------------------
 
